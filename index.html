@@ -277,7 +277,6 @@ function renderStage(){
   const s = STAGES[currentStage];
   const vs = videoStatus[currentStage] || 'idle';
   const uploaded = videoStatus[currentStage+'_uploaded'];
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   let html = '';
   html += '<div class="stage-badge '+s.badge+'">'+s.badgeLabel+'</div>';
@@ -301,37 +300,29 @@ function renderStage(){
   // Tips
   html += '<div class="tips-box"><strong>Tips:</strong> '+s.tips+'</div>';
 
-  // iOS notice
-  if(isIOS){
-    html += '<div class="tips-box" style="margin-bottom:1rem"><strong>iPhone/iPad:</strong> Tap "Choose video file" below to record with your camera app, then select your video to upload.</div>';
-  }
-
   // Video area
   html += '<div class="video-area">';
   html += '<div class="video-preview" id="vp-'+currentStage+'">';
-  html += '<div class="vp-placeholder" id="vpp-'+currentStage+'"><div class="icon">&#9673;</div><div>Camera preview</div></div>';
+  html += '<div class="vp-placeholder" id="vpp-'+currentStage+'"><div class="icon">&#9673;</div><div>Camera preview will appear here</div></div>';
   html += '<video id="vid-'+currentStage+'" playsinline muted></video>';
   html += '</div>';
   html += '<div class="video-controls" id="vc-'+currentStage+'">';
 
-  if(isIOS){
-    // Always show file picker on iOS regardless of state
-    if(vs!=='stopped'){
-      html += '<label class="btn btn-primary" style="cursor:pointer;display:inline-block">Choose video file<input type="file" accept="video/*" capture="user" style="display:none" onchange="handleFileUpload('+currentStage+',this)"></label>';
-    }
-  } else {
-    if(vs==='idle'||vs==='stopped') html += '<button class="btn btn-primary" onclick="startRecord('+currentStage+')">Start recording</button>';
-    if(vs==='recording'){
-      html += '<button class="btn btn-danger" onclick="stopRecord('+currentStage+')">Stop recording</button>';
-      html += '<span class="rec-indicator"><span class="rec-dot"></span>Recording</span>';
-      html += '<span class="rec-timer" id="rt-'+currentStage+'">0:00</span>';
-    }
-    if(vs==='stopped'){
-      html += '<button class="btn" onclick="playback('+currentStage+')">Play back</button>';
-      html += '<button class="btn" onclick="reRecord('+currentStage+')">Re-record</button>';
-    }
+  if(vs==='idle'||vs==='stopped'){
+    html += '<button class="btn btn-primary" onclick="startRecord('+currentStage+')">Start recording</button>';
+    html += '<label class="btn" style="cursor:pointer">Upload from library<input type="file" accept="video/*" style="display:none" onchange="handleFileUpload('+currentStage+',this)"></label>';
+  }
+  if(vs==='recording'){
+    html += '<button class="btn btn-danger" onclick="stopRecord('+currentStage+')">Stop recording</button>';
+    html += '<span class="rec-indicator"><span class="rec-dot"></span>Recording</span>';
+    html += '<span class="rec-timer" id="rt-'+currentStage+'">0:00</span>';
+  }
+  if(vs==='stopped'){
+    html += '<button class="btn" onclick="playback('+currentStage+')">Play back</button>';
+    html += '<button class="btn" onclick="reRecord('+currentStage+')">Re-record</button>';
   }
   html += '</div>';
+  html += '<div style="margin-top:.5rem;font-size:12px;color:#999">On iPhone: tap <strong>Start recording</strong> to use your camera, or <strong>Upload from library</strong> to select a saved video.</div>';
 
   if(vs==='stopped'){
     if(uploaded){
