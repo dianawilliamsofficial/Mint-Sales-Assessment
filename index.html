@@ -364,8 +364,11 @@ function nextStage(){
   }
   currentStage++;
   if(currentStage >= STAGES.length){ showComplete(); return; }
-  renderStage();
-  window.scrollTo({top:0,behavior:'smooth'});
+  // Brief pause to allow memory to clear before loading next stage
+  setTimeout(()=>{
+    renderStage();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }, 500);
 }
 
 function attachStream(qi){
@@ -488,6 +491,9 @@ async function uploadVideo(qi){
       body: params.toString()
     }).then(function(){
       videoStatus[qi+'_uploaded']=true;
+      // Free memory immediately after successful upload
+      recordedChunks[qi]=[];
+      if(streams[qi]){ try{ streams[qi].getTracks().forEach(t=>t.stop()); }catch(e){} streams[qi]=null; }
       renderStage();
     }).catch(function(){
       if(st) st.innerHTML='<span style="color:#E24B4A">Network error — check your connection and try again.</span>';
