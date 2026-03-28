@@ -322,7 +322,7 @@ function renderStage(){
     html += '<button class="btn" onclick="reRecord('+currentStage+')">Re-record</button>';
   }
   html += '</div>';
-  html += '<div style="margin-top:.5rem;font-size:12px;color:#999">On iPhone: tap <strong>Start recording</strong> to use your camera, or <strong>Upload from library</strong> to select a saved video.</div>';
+  html += '<div style="margin-top:.5rem;font-size:12px;color:#999"><strong>iPhone:</strong> Tap <strong>Start recording</strong> to choose a video from your Photos library. Record in your Camera app first, then select it here. &nbsp;|&nbsp; <strong>Desktop:</strong> Tap Start recording to use your webcam directly.</div>';
 
   if(vs==='stopped'){
     if(uploaded){
@@ -379,6 +379,23 @@ function attachStream(qi){
 }
 
 async function startRecord(qi){
+  // Detect iOS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  
+  if(isIOS){
+    // On iOS, trigger the file picker directly instead of camera API
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'video/*';
+    input.style.display = 'none';
+    input.onchange = function(){ handleFileUpload(qi, input); };
+    document.body.appendChild(input);
+    input.click();
+    setTimeout(()=>{ try{ document.body.removeChild(input); }catch(e){} }, 5000);
+    return;
+  }
+
   try{
     const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
     streams[qi]=stream; recordedChunks[qi]=[];
@@ -395,7 +412,7 @@ async function startRecord(qi){
       if(el) el.textContent = m+':'+(s<10?'0':'')+s;
     },1000);
   }catch(e){
-    alert('Camera access is required. Please allow camera and microphone access and try again.');
+    alert('Camera access was denied. Please use the "Upload from library" button instead — record your video in the Camera app first, then select it here.');
   }
 }
 
